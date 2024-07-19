@@ -65,3 +65,7 @@ except KeyboardInterrupt:
     for code in sorted(status_codes):
         if status_codes[code] > 0:
             print(f"{code}: {status_codes[code]}")
+
+
+if __name__ == '__main__':
+    run()
