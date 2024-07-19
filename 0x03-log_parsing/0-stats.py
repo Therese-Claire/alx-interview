@@ -3,6 +3,7 @@ import sys
 import re
 from collections import defaultdict
 
+
 def update_metrics(line):
     """
     Updates the metrics from a given HTTP request log.
@@ -13,7 +14,9 @@ def update_metrics(line):
     Returns:
         int: The new total file size.
     """
-    match = re.match(r'(\S+) - \[(.*?)\] "GET /projects/260 HTTP/1.1" (\d+) (\d+)', line)
+    match = re.match(
+        r'(\S+) - \[(.*?)\] "GET /projects/260 HTTP/1.1" (\d+) (\d+)',
+        line)
     if match:
         ip_address, date, status_code, file_size = match.groups()
         status_code = int(status_code)
@@ -21,6 +24,7 @@ def update_metrics(line):
         return file_size
     else:
         return 0
+
 
 try:
     line_count = 0
