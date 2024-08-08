@@ -1,29 +1,25 @@
 #!/usr/bin/node
-
-// Import the 'request' library
 const request = require('request');
+const url = 'https://swapi-api.alx-tools.com/api/films/' + process.argv[2];
 
-// Get the Movie ID from the first positional argument
-const movieId = process.argv[2];
-
-// Star Wars API endpoint for films
-const apiUrl = `https://swapi.dev/api/films/${movieId}/`;
-
-// Make a request to the Star Wars API
-request(apiUrl, (error, response, body) => {
-  if (!error && response.statusCode === 200) {
-    const movie = JSON.parse(body);
-
-    // Print each character name from the "characters" list
-    movie.characters.forEach((characterUrl) => {
-      request(characterUrl, (err, res, charBody) => {
-        if (!err && res.statusCode === 200) {
-          const character = JSON.parse(charBody);
-          console.log(character.name);
-        }
+request(url, { json: true }, (err, res, body) => {
+  if (!err) {
+    const characterPromises = body.characters.map(character => {
+      return new Promise((resolve, reject) => {
+        request(character, { json: true }, (err2, res2, body2) => {
+          if (!err2) {
+            resolve(body2.name);
+          } else { reject(err2); }
+        });
       });
     });
-  } else {
-    console.error('Error fetching movie data:', error);
+
+    Promise.all(characterPromises)
+      .then(names => {
+        names.forEach(name => console.log(name));
+      })
+      .catch(error => {
+        console.log(error);
+      });
   }
 });
