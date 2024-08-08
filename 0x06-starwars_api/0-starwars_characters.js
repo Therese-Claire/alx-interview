@@ -3,37 +3,27 @@
 // Import the 'request' library
 const request = require('request');
 
-// Define constant with the base URL of the Star Wars API
-const API_URL = 'https://swapi-api.alx-tools.com/api';
+// Get the Movie ID from the first positional argument
+const movieId = process.argv[2];
 
-// Check if the number of command line arguments is greater than 2
-if (process.argv.length > 2) {
-  // Make a request to the film resource for the specified film ID
-  request(`${API_URL}/films/${process.argv[2]}/`, (err, _, body) => {
-    // If an error occurred during the request, log the error
-    if (err) {
-      console.log(err);
-    }
-    // Get the characters URL from the film's response body
-    const charactersURL = JSON.parse(body).characters;
+// Star Wars API endpoint for films
+const apiUrl = `https://swapi.dev/api/films/${movieId}/`;
 
-    // Create an array of Promises that resolve with the names of the characters
-    const charactersName = charactersURL.map(
-      url => new Promise((resolve, reject) => {
-        // Make a request to the character resource
-        request(url, (promiseErr, __, charactersReqBody) => {
-          // If an error occurred during the request, reject the Promise with the error
-          if (promiseErr) {
-            reject(promiseErr);
-          }
-          // Resolve the Promise with the name of the character
-          resolve(JSON.parse(charactersReqBody).name);
-        });
-      }));
+// Make a request to the Star Wars API
+request(apiUrl, (error, response, body) => {
+  if (!error && response.statusCode === 200) {
+    const movie = JSON.parse(body);
 
-    // Wait for all Promises to resolve and log the names of the characters, separated by new lines
-    Promise.all(charactersName)
-      .then(names => console.log(names.join('\n')))
-      .catch(allErr => console.log(allErr));
-  });
-}
+    // Print each character name from the "characters" list
+    movie.characters.forEach((characterUrl) => {
+      request(characterUrl, (err, res, charBody) => {
+        if (!err && res.statusCode === 200) {
+          const character = JSON.parse(charBody);
+          console.log(character.name);
+        }
+      });
+    });
+  } else {
+    console.error('Error fetching movie data:', error);
+  }
+});
